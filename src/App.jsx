@@ -4,9 +4,11 @@ import './App.css'
 import TodoList from './TodoList'
 // eslint-disable-next-line no-unused-vars
 import TodoForm from './TodoForm'
+import { useState } from 'react'
 
 
 function App() {
+  const [newTodo, setNewTodo] = useState("Example Text ");
  
   
 
@@ -14,6 +16,7 @@ function App() {
     <div>
         <h1>Todo List</h1>
         <TodoForm/>
+        <p>{newTodo}</p>
         <TodoList/>
         
        
