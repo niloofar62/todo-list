@@ -1,4 +1,3 @@
-
 import './App.css'
 // eslint-disable-next-line no-unused-vars
 import TodoList from './TodoList'
@@ -6,23 +5,20 @@ import TodoList from './TodoList'
 import TodoForm from './TodoForm'
 import { useState } from 'react'
 
-
 function App() {
-  const [newTodo, setNewTodo] = useState("Example Text ");
- 
-  
+  const [todoList, setTodoList] = useState([]);
+
+  function handleAddTodo(newTodo) {
+    setTodoList([...todoList, newTodo]);
+  }
 
   return (
     <div>
-        <h1>Todo List</h1>
-        <TodoForm/>
-        <p>{newTodo}</p>
-        <TodoList/>
-        
-       
+      <h1>Todo List</h1>
+      <TodoForm onAddTodo={handleAddTodo} />
+      <TodoList todoList={todoList} /> {/* ← passed todoList as a prop */}
     </div>
-   
-  )
+  );
 }
 
-export default App
+export default App;
