@@ -14,20 +14,67 @@
 //     );
 // };
 // export default TodoList;
+// import TodoListItem from "./TodoListItem";
+// function TodoList(){
+//     const todos = [
+//         {id: 1, title: "review resources"},
+//         {id: 2, title: "take notes"},
+//         {id: 3, title: "code out app"},
+//     ]
+//     return(
+//         <ul>
+//         {todos.map((todo) =>( <TodoListItem todo={todo } key={todo.id}/>))}
+//         </ul>
+
+
+
+//     );
+// };
+// export default TodoList;
+
+// import TodoListItem from "./TodoListItem";
+
+// function TodoList({ todoList }) {
+//   return (
+//     <>
+//       {todoList.length === 0 ? (
+//         <p>Add todo above to get started</p>
+//       ) : (
+//         <ul>
+//           {todoList.map((todo) => (
+//             <TodoListItem todo={todo} key={todo.id} />
+//           ))}
+//         </ul>
+//       )}
+//     </>
+//   );
+// }
+
+// export default TodoList;
+
+
 import TodoListItem from "./TodoListItem";
-function TodoList(){
-    const todos = [
-        {id: 1, title: "review resources"},
-        {id: 2, title: "take notes"},
-        {id: 3, title: "code out app"},
-    ]
-    return(
+
+function TodoList({ todoList, onCompleteTodo }) {
+  const filteredTodoList = todoList.filter((todo) => !todo.isCompleted); //  hide completed
+
+  return (
+    <>
+      {filteredTodoList.length === 0 ? (
+        <p>Add todo above to get started</p>
+      ) : (
         <ul>
-        {todos.map((todo) =>( <TodoListItem todo={todo } key={todo.id}/>))}
+          {filteredTodoList.map((todo) => (
+            <TodoListItem
+              key={todo.id}
+              todo={todo}
+              onCompleteTodo={onCompleteTodo}
+            />
+          ))}
         </ul>
+      )}
+    </>
+  );
+}
 
-
-
-    );
-};
 export default TodoList;

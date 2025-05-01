@@ -1,12 +1,35 @@
-function TodoForm (){
+import { useState } from "react";
 
-    return(
-       <form>
-        <label htmlFor="todoTitle">Todo</label>
-        <input type="text" id="todoTitle"/>
-        <button type="submit">Add Todo</button>
-       </form> 
-    );
-};
+function TodoForm({ onAddTodo }) {
+  const [workingTodoTitle, setWorkingTodoTitle] = useState("");
 
-export  default TodoForm;
+  function handleAddTodo(event) {
+    event.preventDefault();
+
+    const title = workingTodoTitle.trim();
+
+    if (title !== "") {
+      onAddTodo(title);          // send to parent
+      setWorkingTodoTitle("");   // clear input
+    }
+  }
+
+  return (
+    <form onSubmit={handleAddTodo}>
+      <label htmlFor="todoTitle">Todo</label>
+      <input
+        type="text"
+        id="todoTitle"
+        name="title"
+        value={workingTodoTitle}
+        onChange={(event) => setWorkingTodoTitle(event.target.value)}
+      />
+      <button type="submit" disabled={workingTodoTitle.trim() === ""}>
+  Add Todo
+</button>
+
+    </form>
+  );
+}
+
+export default TodoForm;
