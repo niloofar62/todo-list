@@ -1,9 +1,9 @@
 
 import './App.css'
 // eslint-disable-next-line no-unused-vars
-import TodoList from './TodoList'
+import TodoList from './features/TodoList/TodoList'
 // eslint-disable-next-line no-unused-vars
-import TodoForm from './TodoForm'
+import TodoForm from './features/TodoForm'
 import { useState } from 'react'
 
 
