@@ -1,9 +1,9 @@
 
 import './App.css'
 // eslint-disable-next-line no-unused-vars
-import TodoList from './TodoList'
+import TodoList from './features/TodoList/TodoList'
 // eslint-disable-next-line no-unused-vars
-import TodoForm from './TodoForm'
+import TodoForm from './features/TodoForm'
 import { useState } from 'react'
 
 
@@ -31,6 +31,18 @@ function App() {
   
     setTodoList(updatedTodos);
   }
+
+  function updateTodo(editedTodo) {
+    const updatedTodos = todoList.map((todo) => {
+      if (todo.id === editedTodo.id) {
+        return { ...todo, title: editedTodo.title };
+      }
+      return todo;
+    });
+  
+    setTodoList(updatedTodos);
+  }
+  
   
   
 
@@ -38,7 +50,7 @@ function App() {
     <div>
       <h1>Todo List</h1>
       <TodoForm onAddTodo={handleAddTodo} />
-      <TodoList todoList={todoList} onCompleteTodo={completeTodo} />
+      <TodoList todoList={todoList} onCompleteTodo={completeTodo} onUpdateTodo={updateTodo} />
     </div>
   );
 }
