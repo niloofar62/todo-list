@@ -4,55 +4,252 @@ import './App.css'
 import TodoList from './features/TodoList/TodoList'
 // eslint-disable-next-line no-unused-vars
 import TodoForm from './features/TodoForm'
-import { useState } from 'react'
+import { useState,useEffect } from 'react'
 
 
 function App() {
-  // Define the todo list
   const [todoList, setTodoList] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
 
-  // Function to add a new todo
-  function handleAddTodo(newTitle) {
-    const newTodo = {
-      id: Date.now(),
-      title: newTitle,
-      isCompleted: false, 
+
+  const url = `https://api.airtable.com/v0/${import.meta.env.VITE_BASE_ID}/${import.meta.env.VITE_TABLE_NAME}`;
+  const token = `Bearer ${import.meta.env.VITE_PAT}`;
+  
+
+  useEffect(() => {
+    const fetchTodos = async () => {
+      setIsLoading(true);
+
+      const options = {
+        method: 'GET',
+        headers: {
+          Authorization: token,
+        },
+      };
+
+      try {
+        const resp = await fetch(url, options);
+        if (!resp.ok) {
+          throw new Error(resp.statusText);
+        }
+
+        const data = await resp.json();
+        const fetchedTodos = data.records.map((record) => {
+          const todo = {
+            id: record.id,
+            ...record.fields,
+          };
+          if (!todo.isCompleted) {
+            todo.isCompleted = false;
+          }
+          return todo;
+        });
+
+        setTodoList(fetchedTodos);
+      } catch (error) {
+        setErrorMessage(error.message);
+      } finally {
+        setIsLoading(false);
+      }
     };
-    setTodoList([...todoList, newTodo]);
+
+    fetchTodos();
+  }, []);
+
+  // function handleAddTodo(newTitle) {
+  //   const newTodo = {
+  //     id: Date.now(),
+  //     title: newTitle,
+  //     isCompleted: false,
+  //   };
+  //   setTodoList([...todoList, newTodo]);
+  // }
+  async function handleAddTodo(newTitle) {
+    const newTodo = {
+      title: newTitle,
+      isCompleted: false,
+    };
+  
+    const payload = {
+      records: [
+        {
+          fields: newTodo,
+        },
+      ],
+    };
+  
+    const options = {
+      method: 'POST',
+      headers: {
+        Authorization: token,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    };
+  
+    try {
+      setIsSaving(true);
+  
+      const resp = await fetch(url, options);
+      if (!resp.ok) throw new Error('Failed to save todo');
+  
+      const { records } = await resp.json();
+  
+      const savedTodo = {
+        id: records[0].id,
+        ...records[0].fields,
+      };
+  
+      if (!savedTodo.isCompleted) {
+        savedTodo.isCompleted = false;
+      }
+  
+      setTodoList([...todoList, savedTodo]);
+    } catch (error) {
+      console.error(error);
+      setErrorMessage(error.message);
+    } finally {
+      setIsSaving(false);
+    }
+  }
+  
+
+  // function completeTodo(id) {
+  //   const updatedTodos = todoList.map((todo) =>
+  //     todo.id === id ? { ...todo, isCompleted: true } : todo
+  //   );
+  //   setTodoList(updatedTodos);
+  // }
+  async function completeTodo(id) {
+    // 1️⃣ Keep a copy of the original list
+    const originalTodos = [...todoList];
+  
+    // 2️⃣ Optimistically update the UI
+    setTodoList(
+      todoList.map((todo) =>
+        todo.id === id ? { ...todo, isCompleted: true } : todo
+      )
+    );
+  
+    // 3️⃣ Build the Airtable payload & options
+    const payload = {
+      records: [
+        {
+          id,
+          fields: { isCompleted: true },
+        },
+      ],
+    };
+    const options = {
+      method: "PATCH",
+      headers: {
+        Authorization: token,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    };
+  
+    // 4️⃣ Send the request and handle errors
+    try {
+      const resp = await fetch(url, options);
+      if (!resp.ok) {
+        throw new Error("Failed to complete todo");
+      }
+      // (Optionally you could re-sync with the response payload here)
+    } catch (error) {
+      console.error(error);
+      setErrorMessage(error.message);
+      // 5️⃣ Roll back to the original list
+      setTodoList(originalTodos);
+    }
   }
 
-  function completeTodo(id) {
-    const updatedTodos = todoList.map((todo) => {
-      if (todo.id === id) {
-        return { ...todo, isCompleted: true };
-      }
-      return todo;
-    });
+  // function updateTodo(editedTodo) {
+  //   const updatedTodos = todoList.map((todo) =>
+  //     todo.id === editedTodo.id ? { ...todo, title: editedTodo.title } : todo
+  //   );
+  //   setTodoList(updatedTodos);
+  // }
+  async function updateTodo(editedTodo) {
+    setIsSaving(true);
   
+    // Save the original todo
+    const originalTodo = todoList.find((todo) => todo.id === editedTodo.id);
+  
+    // Update UI immediately (optimistic update)
+    const updatedTodos = todoList.map((todo) =>
+      todo.id === editedTodo.id ? { ...todo, title: editedTodo.title } : todo
+    );
     setTodoList(updatedTodos);
-  }
-
-  function updateTodo(editedTodo) {
-    const updatedTodos = todoList.map((todo) => {
-      if (todo.id === editedTodo.id) {
-        return { ...todo, title: editedTodo.title };
+  
+    // Prepare payload for Airtable
+    const payload = {
+      records: [
+        {
+          id: editedTodo.id,
+          fields: {
+            title: editedTodo.title,
+            isCompleted: editedTodo.isCompleted,
+          },
+        },
+      ],
+    };
+  
+    const options = {
+      method: "PATCH",
+      headers: {
+        Authorization: token,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    };
+  
+    try {
+      const resp = await fetch(url, options);
+      if (!resp.ok) {
+        throw new Error("Failed to update todo");
       }
-      return todo;
-    });
+    } catch (error) {
+      console.error(error);
+      setErrorMessage(`${error.message}. Reverting todo...`);
   
-    setTodoList(updatedTodos);
+      // Revert UI to original state
+      const revertedTodos = todoList.map((todo) =>
+        todo.id === originalTodo.id ? originalTodo : todo
+      );
+      setTodoList(revertedTodos);
+    } finally {
+      setIsSaving(false);
+    }
   }
-  
-  
   
 
   return (
     <div>
       <h1>Todo List</h1>
-      <TodoForm onAddTodo={handleAddTodo} />
-      <TodoList todoList={todoList} onCompleteTodo={completeTodo} onUpdateTodo={updateTodo} />
+      <TodoForm onAddTodo={handleAddTodo} isSaving={isSaving}/>
+      <TodoList
+        todoList={todoList}
+        onCompleteTodo={completeTodo}
+        onUpdateTodo={updateTodo}
+        isLoading={isLoading}
+      />
+
+      {errorMessage && (
+        <div>
+          <hr />
+          <p>{errorMessage}</p>
+          <button type="submit" disabled={workingTodoTitle.trim() === ''}>
+  {isSaving ? 'Saving...' : 'Add Todo'}
+</button>
+
+        </div>
+      )}
     </div>
   );
 }
 
 export default App;
+
