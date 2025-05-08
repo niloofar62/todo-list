@@ -55,8 +55,12 @@
 
 import TodoListItem from "./TodoListItem";
 
-function TodoList({ todoList, onCompleteTodo, onUpdateTodo }) {
-  const filteredTodoList = todoList.filter((todo) => !todo.isCompleted); //  hide completed
+function TodoList({ todoList, onCompleteTodo, onUpdateTodo, isLoading }) {
+  const filteredTodoList = todoList.filter((todo) => !todo.isCompleted); // hide completed
+
+  if (isLoading) {
+    return <p>Todo list loading...</p>;
+  }
 
   return (
     <>
@@ -79,3 +83,4 @@ function TodoList({ todoList, onCompleteTodo, onUpdateTodo }) {
 }
 
 export default TodoList;
+
