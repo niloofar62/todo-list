@@ -1,28 +1,43 @@
 
-// src/features/TodosViewForm.jsx
+
+import { useEffect, useState } from "react";
 function TodosViewForm({ sortDirection,
     setSortDirection,
     sortField,
     setSortField,
     queryString,
     setQueryString,}) {
+//localQueryString: Handles real-time typing locally
+      const [localQueryString, setLocalQueryString] = useState(queryString);
+
     function preventRefresh(e) {
       e.preventDefault();
     }
+
+        //useEffect + setTimeout: Waits 500ms after typing stops to update the actual queryString in App.jsx
+
+    useEffect(() => {
+      const debounce = setTimeout(() => {
+        setQueryString(localQueryString);
+      }, 500);
+  //clearTimeout: Cancels the old timeout if the user keeps typing, which avoids flooding updates
+      return () => clearTimeout(debounce);
+    }, [localQueryString, setQueryString]);
   
+
     return (
-        <form onSubmit={(e) => e.preventDefault()}>
+        <form onSubmit={preventRefresh}>
         <div>
           <label htmlFor="search">Search todos:</label>
           <input
             id="search"
             type="text"
-            value={queryString}
-            onChange={(e) => setQueryString(e.target.value)}
+            value={localQueryString}
+            onChange={(e) => setLocalQueryString(e.target.value)}
           />
           <button
             type="button"
-            onClick={() => setQueryString('')}
+            onClick={() => setLocalQueryString('')}
           >
             Clear
           </button>
