@@ -6,6 +6,7 @@ import TodosViewForm from './features/TodosViewForm'
 // eslint-disable-next-line no-unused-vars
 import TodoForm from './features/TodoForm'
 import { useState,useEffect } from 'react'
+import styles from './App.module.css';
 import { useCallback } from 'react'
 
 
@@ -259,7 +260,7 @@ function App() {
   
 
   return (
-    <div>
+    <div className={styles.container}>
       <h1>Todo List</h1>
       <TodoForm onAddTodo={handleAddTodo} isSaving={isSaving}/>
       <TodoList
@@ -279,13 +280,14 @@ function App() {
       />
 
 
+
       {errorMessage && (
-        <div>
+        <div className={styles.errorMessage}>
           <hr />
           <p>{errorMessage}</p>
-          <button type="submit" disabled={workingTodoTitle.trim() === ''}>
+          {/* <button type="submit" disabled={workingTodoTitle.trim() === ''}>
   {isSaving ? 'Saving...' : 'Add Todo'}
-</button>
+</button> */}
 
         </div>
       )}
